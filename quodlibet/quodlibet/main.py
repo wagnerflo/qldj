@@ -70,6 +70,14 @@ def main(argv=None):
 
     app.player = player
 
+    try:
+        preview = quodlibet.player.init_preview(wanted_backend)
+    except PlayerError:
+        print_exc()
+        preview = quodlibet.player.init_preview("nullbe")
+
+    app.preview = preview
+
     environ["PULSE_PROP_media.role"] = "music"
     environ["PULSE_PROP_application.icon_name"] = "quodlibet"
 

@@ -49,6 +49,11 @@ def init_player(backend_name, librarian):
     return backend.init(librarian)
 
 
+def init_preview(backend_name):
+    backend = init_backend(backend_name)
+    return backend.init_preview()
+
+
 def init_backend(backend_name):
     """Imports the player backend module for the given name.
     Raises PlayerError if the import fails.

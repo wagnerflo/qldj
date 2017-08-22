@@ -188,6 +188,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
         self._active_seeks = []
         self._active_error = False
         self._last_position = 0
+        self._config_name = "gst_pipeline"
 
         self.bin = None
         self._int_vol_element = None
@@ -269,7 +270,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
         # reset error state
         self.error = False
 
-        pipeline = config.get("player", "gst_pipeline")
+        pipeline = config.get("player", self._config_name)
         try:
             pipeline, self._pipeline_desc = GStreamerSink(pipeline)
         except PlayerError as e:

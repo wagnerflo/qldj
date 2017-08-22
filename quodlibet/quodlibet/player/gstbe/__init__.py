@@ -7,5 +7,7 @@
 # published by the Free Software Foundation
 
 from .player import init
+from .preview import init_preview
 
 init = init
+init_preview = init_preview

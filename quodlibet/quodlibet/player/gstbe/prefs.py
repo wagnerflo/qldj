@@ -39,12 +39,33 @@ class GstPlayerPreferences(Gtk.VBox):
 
         apply_button = Button(_("_Apply"))
 
+        preview_entry = UndoEntry()
+        preview_entry.set_tooltip_text(_(
+                "The GStreamer output pipeline used for "
+                "preview playback. Leave blank for the default pipeline. "
+                "In case the pipeline contains a sink, "
+                "it will be used instead of the default one."))
+
+        preview_entry.set_text(config.get('player', 'gst_pipeline_preview'))
+
+        def changed(entry):
+            config.set('player', 'gst_pipeline_preview', entry.get_text())
+        preview_entry.connect('changed', changed)
+
+        preview_pipe_label = Gtk.Label(label=_('_Preview output pipeline:'))
+        preview_pipe_label.set_use_underline(True)
+        preview_pipe_label.set_mnemonic_widget(preview_entry)
+
+        preview_apply_button = Button(_("_Apply"))
+
         def format_buffer(scale, value):
             return _("%.1f seconds") % value
 
         def scale_changed(scale):
             duration_msec = int(scale.get_value() * 1000)
             player._set_buffer_duration(duration_msec)
+            from quodlibet import app
+            app.preview._set_buffer_duration(duration_msec)
 
         duration = config.getfloat("player", "gst_buffer")
         scale = Gtk.HScale.new(
@@ -62,6 +83,11 @@ class GstPlayerPreferences(Gtk.VBox):
             player._rebuild_pipeline()
         apply_button.connect('clicked', rebuild_pipeline)
 
+        def rebuild_preview_pipeline(*args):
+            from quodlibet import app
+            app.preview._rebuild_pipeline()
+        preview_apply_button.connect('clicked', rebuild_preview_pipeline)
+
         gapless_button = ConfigCheckButton(
             _('Disable _gapless playback'),
             "player", "gst_disable_gapless", populate=True)
@@ -71,6 +97,7 @@ class GstPlayerPreferences(Gtk.VBox):
               "with some GStreamer versions."))
 
         widgets = [(pipe_label, e, apply_button),
+                   (preview_pipe_label, preview_entry, preview_apply_button),
                    (buffer_label, scale, None),
         ]
 
@@ -90,14 +117,16 @@ class GstPlayerPreferences(Gtk.VBox):
             else:
                 table.attach(middle, 1, 3, i, i + 1)
 
-        table.attach(gapless_button, 0, 3, 2, 3)
+        table.attach(gapless_button, 0, 3, 3, 4)
 
         self.pack_start(table, True, True, 0)
 
         if debug:
             def print_bin(player):
                 player._print_pipeline()
+                from quodlibet import app
+                app.preview._print_pipeline()
 
-            b = Button("Print Pipeline", Icons.DIALOG_INFORMATION)
+            b = Button("Print Pipelines", Icons.DIALOG_INFORMATION)
             connect_obj(b, 'clicked', print_bin, player)
             self.pack_start(b, True, True, 0)

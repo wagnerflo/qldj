@@ -898,6 +898,37 @@ class QuodLibetWindow(Window, PersistentWindowMixin, AppWindow):
             window.show()
 
     def __key_pressed(self, widget, event, player):
+        def preview_play(songs):
+            from quodlibet import app
+            if len(songs) > 1:
+                songs = []
+            songs = [s for s in songs if s.can_add]
+            app.preview.preview(songs[0] if songs else None)
+
+        def preview_jump(sec):
+            from quodlibet import app
+            app.preview.jump(sec)
+
+        # qldi special shortcuts
+        if event.state & Gdk.ModifierType.MOD5_MASK == Gdk.ModifierType.MOD5_MASK:
+            if player is None:
+                return True
+
+            # Preview play/pause: : AltGr+L
+            if event.keyval == 435:
+                preview_play(self.songlist.get_selected_songs())
+                return True
+            # Preview seek backwards: AltGr+K
+            elif event.keyval == 930:
+                preview_jump(-5)
+                return True
+            # Preview seek forwards: AltGr+Ö (german layout)
+            elif event.keyval == 445:
+                preview_jump(+15)
+                return True
+
+            return True
+
         if not player.song:
             return
 
