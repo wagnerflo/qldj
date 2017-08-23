@@ -927,6 +927,28 @@ class QuodLibetWindow(Window, PersistentWindowMixin, AppWindow):
                 preview_jump(+15)
                 return True
 
+            if not player.song:
+                return True
+
+            if event.state & Gdk.ModifierType.SHIFT_MASK != Gdk.ModifierType.SHIFT_MASK:
+                # Set cue in mark: AltGr+I
+                if event.keyval == 2301:
+                    player.write_cue('in')
+                    return True
+                # Set cue out mark: AltGr+O
+                elif event.keyval == 248:
+                    player.write_cue('out')
+                    return True
+            else:
+                # Delete cue in mark: AltGr+Shift+I
+                if event.keyval == 697:
+                    player.write_cue('in', position=0)
+                    return True
+                # Delete cue out mark: AltGr+Shift+O
+                elif event.keyval == 216:
+                    player.write_cue('out', position=0)
+                    return True
+
             return True
 
         if not player.song:

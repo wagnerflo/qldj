@@ -57,6 +57,7 @@ class WaveformSeekBar(Gtk.Box):
         connect_destroy(player, 'song-started', self._on_song_started)
         connect_destroy(player, 'song-ended', self._on_song_ended)
         connect_destroy(player, 'notify::seekable', self._on_seekable_changed)
+        connect_destroy(player, 'cue-change', self._on_cue_change)
         connect_destroy(library, 'changed', self._on_song_changed, player)
 
         self.connect('destroy', self._on_destroy)
@@ -173,6 +174,9 @@ class WaveformSeekBar(Gtk.Box):
     def _on_song_ended(self, player, song, ended):
         self._update(player)
 
+    def _on_cue_change(self, player):
+        self._update_waveform(player, True)
+
     def _update(self, player, full_redraw=False):
         self._update_label(player)
         self._update_waveform(player, full_redraw)
@@ -200,12 +204,16 @@ class WaveformSeekBar(Gtk.Box):
             # Position in ms, length in seconds
             position = player.get_position() / 1000.0
             length = player.info("~#length")
+            cue_in = player.info("~#cue_in") / 1000.0
+            cue_out = player.info("~#cue_out", length * 1000.0) / 1000.0
 
             if length != 0:
                 self._waveform_scale.set_position(position / length)
+                self._waveform_scale.set_cue(cue_in / length, cue_out / length)
             else:
                 print_d("Length reported as zero for %s" % player.info)
                 self._waveform_scale.set_position(0)
+                self._waveform_scale.set_cue(0, 1)
 
             if position == 0 or full_redraw:
                 self._waveform_scale.queue_draw()
@@ -229,6 +237,8 @@ class WaveformScale(Gtk.EventBox):
         self._player = player
         self.set_size_request(40, 40)
         self.position = 0
+        self.cue_in = 0
+        self.cue_out = 1
         self._last_drawn_position = 0
         self.override_background_color(
             Gtk.StateFlags.NORMAL, Gdk.RGBA(alpha=0))
@@ -290,6 +300,11 @@ class WaveformScale(Gtk.EventBox):
         cr.set_line_join(cairo.LINE_JOIN_ROUND)
 
         position_width = self.position * width * pixel_ratio
+        cue_in_width = self.cue_in * width * pixel_ratio
+        cue_out_width = self.cue_out * width * pixel_ratio
+        cue_color = Gdk.RGBA(1 - elapsed_color.red,
+                             1 - elapsed_color.green,
+                             1 - elapsed_color.blue)
         hw = line_width / 2.0
         # Avoiding object lookups is slightly faster
         data = self._rms_vals
@@ -308,7 +323,8 @@ class WaveformScale(Gtk.EventBox):
         for x in range(int(floor(cx * pixel_ratio)),
                        int(ceil((cx + cw) * pixel_ratio)), 1):
 
-            fg_color = (elapsed_color if x < position_width
+            fg_color = (cue_color if x < cue_in_width or x > cue_out_width else
+                        elapsed_color if x < position_width
                         else remaining_color)
             cr.set_source_rgba(*list(fg_color))
 
@@ -392,6 +408,10 @@ class WaveformScale(Gtk.EventBox):
 
     def set_position(self, position):
         self.position = position
+
+    def set_cue(self, cue_in, cue_out):
+        self.cue_in = cue_in
+        self.cue_out = cue_out
 
 
 class Config(object):

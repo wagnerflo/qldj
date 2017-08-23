@@ -37,7 +37,7 @@ from ._misc import AudioFileError, translate_errors
 translate_errors
 
 MIGRATE = {"~#playcount", "~#laststarted", "~#lastplayed", "~#added",
-           "~#skipcount", "~#rating", "~bookmark"}
+           "~#skipcount", "~#rating", "~bookmark", "~#cue_in", "~#cue_out"}
 """These get migrated if a song gets reloaded"""
 
 PEOPLE = ["artist", "albumartist", "author", "composer", "~performers",
@@ -50,7 +50,8 @@ TIME_TAGS = {"~#lastplayed", "~#laststarted", "~#added", "~#mtime"}
 SIZE_TAGS = {"~#filesize"}
 """Size in bytes, defaults to 0"""
 
-NUMERIC_ZERO_DEFAULT = {"~#skipcount", "~#playcount", "~#length", "~#bitrate"}
+NUMERIC_ZERO_DEFAULT = {"~#skipcount", "~#playcount", "~#length", "~#bitrate",
+                        "~#cue_in", "~#cue_out"}
 """Defaults to 0"""
 
 NUMERIC_ZERO_DEFAULT.update(TIME_TAGS)
@@ -343,6 +344,11 @@ class AudioFile(dict, ImageContainer):
                     return default
                 else:
                     return util.format_time_display(length)
+            elif key == "#cue_in":
+                return float(self.get("qldj_" + key[1:], 0))
+            elif key == "#cue_out":
+                return float(self.get(
+                    "qldj_" + key[1:], self("~#length", 1) * 1000.0))
             elif key == "#rating":
                 return dict.get(self, "~" + key, config.RATINGS.default)
             elif key == "rating":

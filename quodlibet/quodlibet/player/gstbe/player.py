@@ -201,6 +201,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
         self._lib_id = librarian.connect("changed", self.__songs_changed)
         self.__atf_id = None
         self.__bus_id = None
+        self.__cue_out_id = None
         self._runner = MainRunner()
 
     def __songs_changed(self, librarian, songs):
@@ -519,6 +520,14 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
                 new_state = message.parse_state_changed()[1]
                 if new_state >= Gst.State.PAUSED:
                     self._refresh_seekable()
+                if new_state == Gst.State.PLAYING:
+                    if self.__cue_out_id is None:
+                        self.__cue_out_id = GLib.timeout_add(
+                            100, self.__handle_cue_out)
+                elif new_state == Gst.State.PAUSED:
+                    if self.__cue_out_id is not None:
+                        GLib.source_remove(self.__cue_out_id)
+                        self.__cue_out_id = None
         elif message.type == Gst.MessageType.STREAM_START:
             if self._in_gapless_transition:
                 print_d("Stream changed")
@@ -551,6 +560,24 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
                     p /= float(Gst.SECOND)
                     self.song["~#length"] = p
                     librarian.changed([self.song])
+
+    def __seek_cue_in(self):
+        if not self.song:
+            return
+        cue_in = self.song('~#cue_in')
+        if cue_in:
+            self.seek(cue_in)
+
+    def __handle_cue_out(self):
+        if not self.song:
+            return
+        cue_out = self.song("~#cue_out")
+        if cue_out and self.get_position() >= cue_out:
+            self.__cue_out_id = None
+            self._source.next()
+            self._end(False)
+            return False
+        return True
 
     def __handle_missing_plugin(self, message):
         get_installer_detail = \
@@ -849,6 +876,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
                 # a gapless transition.
                 self.__destroy_pipeline()
                 self.__init_pipeline()
+                self.__seek_cue_in()
             if self.bin:
                 if self.paused:
                     self.bin.set_state(Gst.State.PAUSED)

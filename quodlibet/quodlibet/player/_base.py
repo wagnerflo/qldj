@@ -86,6 +86,7 @@ class BasePlayer(GObject.GObject, Equalizer):
         'unpaused': (GObject.SignalFlags.RUN_LAST, None, ()),
         # (song, PlayerError)
         'error': (GObject.SignalFlags.RUN_LAST, None, (object, object)),
+        'cue-change': (GObject.SignalFlags.RUN_LAST, None, ()),
     }
 
     __gproperties__ = {
@@ -166,6 +167,28 @@ class BasePlayer(GObject.GObject, Equalizer):
     @mute.setter
     def mute(self, v):
         self.props.mute = v
+
+    def write_cue(self, which, position=None):
+        if not self.song:
+            return
+        if position is None:
+            position = self.get_position()
+        tag = 'qldj_cue_%s' % which
+
+        def done():
+            self.emit('cue-change')
+            if self.song.is_writable():
+                self.song.write()
+
+        if not position and tag in self.song:
+            del self.song[tag]
+            done()
+            return
+
+        if position and self.song.get(tag, None) != position:
+            self.song[tag] = position
+            done()
+            return
 
     @property
     def seekable(self):
