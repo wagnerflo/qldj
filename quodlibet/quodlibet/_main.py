@@ -118,7 +118,7 @@ def get_user_dir():
     if os.name == "nt":
         USERDIR = os.path.join(windows.get_appdate_dir(), "Quod Libet")
     else:
-        USERDIR = os.path.join(os.path.expanduser("~"), ".quodlibet")
+        USERDIR = os.path.join(os.path.expanduser("~"), ".qldj")
 
     if 'QUODLIBET_USERDIR' in environ:
         USERDIR = environ['QUODLIBET_USERDIR']
