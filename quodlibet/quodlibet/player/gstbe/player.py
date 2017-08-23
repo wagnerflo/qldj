@@ -236,6 +236,12 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
             value = duration * Gst.MSECOND
             self.bin.set_property('buffer-duration', value)
 
+    def _set_trackchange_pause(self, duration):
+        config.set("player", "trackchange_pause", duration)
+
+    def _get_trackchange_pause(self):
+        return int(config.getfloat("player", "trackchange_pause") * 1000)
+
     def _print_pipeline(self):
         """Print debug information for the active pipeline to stdout
         (elements, formats, ...)
@@ -850,7 +856,15 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
                     # something unpaused while no song was active
                     if song is None:
                         self.emit("unpaused")
-                    self.bin.set_state(Gst.State.PLAYING)
+                    def start(force=False):
+                        if force or (not self.paused and current == self.song):
+                            self.bin.set_state(Gst.State.PLAYING)
+                        return False
+                    pause = self._get_trackchange_pause()
+                    if not self._in_gapless_transition and pause > 0:
+                        GLib.timeout_add(pause, start)
+                    else:
+                        start(force=True)
         else:
             self.__destroy_pipeline()
             self.paused = True

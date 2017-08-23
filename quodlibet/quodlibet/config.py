@@ -43,6 +43,7 @@ INITIAL = {
         "gst_pipeline": "",
         "gst_pipeline_preview": "",
         "gst_buffer": "3", # stream buffer duration in seconds
+        "trackchange_pause": "0",
         "gst_device": "",
         "gst_disable_gapless": "false",
     },

@@ -96,9 +96,33 @@ class GstPlayerPreferences(Gtk.VBox):
             _("Disabling gapless playback can avoid track changing problems "
               "with some GStreamer versions."))
 
+        def trackchange_changed(scale):
+            duration = scale.get_value()
+            player._set_trackchange_pause(duration)
+            if duration > 0:
+                gapless_button.set_active(True)
+                gapless_button.set_sensitive(False)
+            else:
+                gapless_button.set_sensitive(True)
+
+        trackchange_pause = config.getfloat("player", "trackchange_pause")
+        trackchange_scale = Gtk.HScale.new(
+            Gtk.Adjustment(value=trackchange_pause, lower=0.0, upper=10))
+        trackchange_scale.set_value_pos(Gtk.PositionType.RIGHT)
+        trackchange_scale.set_show_fill_level(True)
+        trackchange_scale.connect('format-value', format_buffer)
+        trackchange_scale.connect('value-changed', trackchange_changed)
+
+        trackchange_label = Gtk.Label(label=_('_Pause between tracks:'))
+        trackchange_label.set_use_underline(True)
+        trackchange_label.set_mnemonic_widget(trackchange_scale)
+
+        trackchange_changed(trackchange_scale)
+
         widgets = [(pipe_label, e, apply_button),
                    (preview_pipe_label, preview_entry, preview_apply_button),
                    (buffer_label, scale, None),
+                   (trackchange_label, trackchange_scale, None),
         ]
 
         table = Gtk.Table(n_rows=len(widgets), n_columns=3)
@@ -117,7 +141,7 @@ class GstPlayerPreferences(Gtk.VBox):
             else:
                 table.attach(middle, 1, 3, i, i + 1)
 
-        table.attach(gapless_button, 0, 3, 3, 4)
+        table.attach(gapless_button, 0, 3, 4, 5)
 
         self.pack_start(table, True, True, 0)
 
