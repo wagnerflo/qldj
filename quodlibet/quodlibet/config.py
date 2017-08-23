@@ -46,6 +46,7 @@ INITIAL = {
         "trackchange_pause": "0",
         "gst_device": "",
         "gst_disable_gapless": "false",
+        "hide_cover": "true",
     },
     "library": {
         "exclude": "",

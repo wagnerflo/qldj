@@ -418,6 +418,17 @@ class PreferencesWindow(UniqueWindow):
             table.attach(pre_align, 1, 2, 2, 3)
 
             f = qltk.Frame(_("Replay Gain Volume Adjustment"), child=table)
+            self.pack_start(f, False, True, 0)
+
+            # player controls
+            c = CCB(_("_Hide album cover image (requires restart)"),
+                    "player", "hide_cover", populate=True)
+            table = Gtk.Table.new(1, 2, False)
+            table.set_col_spacings(6)
+            table.set_row_spacings(6)
+            table.attach(c, 0, 2, 0, 1)
+
+            f = qltk.Frame(_("Player Controls"), child=table)
 
             c.emit('toggled')
 

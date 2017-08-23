@@ -342,7 +342,8 @@ class TopBar(Gtk.Toolbar):
                 app.cover_manager, 'cover-changed',
                 self.__song_art_changed, library)
 
-        box.pack_start(Align(self.image, border=2), False, True, 0)
+        if not config.getboolean("player", "hide_cover"):
+            box.pack_start(Align(self.image, border=2), False, True, 0)
 
         # On older Gtk+ (3.4, at least)
         # setting a margin on CoverImage leads to errors and result in the
