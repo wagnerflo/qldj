@@ -194,7 +194,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
         self._int_vol_element = None
         self._ext_vol_element = None
         self._ext_mute_element = None
-        self._use_eq = False
+        self._use_eq = True
         self._eq_element = None
         self.__info_buffer = None
 
@@ -966,11 +966,6 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
             return []
 
     def update_eq_values(self):
-        need_eq = any(self._eq_values)
-        if need_eq != self._use_eq:
-            self._use_eq = need_eq
-            self._rebuild_pipeline()
-
         if self._eq_element:
             for band, val in enumerate(self._eq_values):
                 self._eq_element.set_property('band%d' % band, val)

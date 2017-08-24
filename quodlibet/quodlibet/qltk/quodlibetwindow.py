@@ -350,11 +350,69 @@ class TopBar(Gtk.Toolbar):
         # QL window not beeing visible for some reason.
         assert self.image.props.margin == 0
 
+        self.insert(Gtk.SeparatorToolItem(), 3)
+
+        eq_item = Gtk.ToolItem()
+        eq_box = Gtk.HBox()
+
+        def make_scale():
+            eq_scale = Gtk.Scale.new(
+                Gtk.Orientation.VERTICAL,
+                Gtk.Adjustment(0, -24, +12, .1, .5)
+            )
+            eq_scale.set_inverted(True)
+            eq_scale.set_has_origin(False)
+            eq_scale.set_digits(1)
+            qltk.add_css(eq_scale, '''
+                scale { padding-left: 0; }
+                scale value  { min-width: 10px; font-size: 10px; }
+                scale contents { padding-left: 12px; }
+                scale trough { margin-top: -4px; margin-bottom: -7px; }
+            ''')
+            eq_box.pack_start(eq_scale, False, False, 0)
+            return eq_scale
+
+        self._eq_scale_low = make_scale()
+        self._eq_scale_mid = make_scale()
+        self._eq_scale_hig = make_scale()
+
+        for eq_scale in (self._eq_scale_low,
+                         self._eq_scale_mid,
+                         self._eq_scale_hig):
+            eq_scale.connect('button-press-event', self.__on_eq_click)
+            eq_scale.connect('value-changed', self.__on_eq_changed, player)
+
+        eq_item.add(eq_box)
+
+        self.insert(eq_item, 4)
+
         for child in self.get_children():
             child.show_all()
 
         context = self.get_style_context()
         context.add_class("primary-toolbar")
+
+    def __on_eq_click(self, widget, event):
+        if ( event.type == Gdk.EventType.BUTTON_PRESS and
+             event.button == 3 ):
+            widget.set_value(0)
+
+    def __on_eq_changed(self, widget, player):
+        low = self._eq_scale_low.get_value()
+        mid = self._eq_scale_mid.get_value()
+        hig = self._eq_scale_hig.get_value()
+        player.eq_values = (
+            0.0,       #    29 Hz
+            low,       #    59 Hz
+            low / 1.5, #   119 Hz
+            low / 2.0, #   237 Hz
+            mid,       #   474 Hz
+            mid,       #   947 Hz
+            mid / 1.5, #  1889 Hz
+            hig,       #  3770 Hz
+            hig,       #  7523 Hz
+            hig / 2.0, # 15011 Hz
+        )
 
     def set_seekbar_widget(self, widget):
         children = self._pattern_box.get_children()
