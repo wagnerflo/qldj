@@ -29,6 +29,7 @@ from quodlibet.util import human_sort_key as human, capitalize
 from quodlibet.util.tags import TAG_ROLES, TAG_TO_SORT
 from quodlibet.compat import iteritems, string_types, text_type, \
     number_types, listitems, izip_longest, integer_types, PY3, listfilter
+from quodlibet._init import get_init_time
 
 from ._image import ImageContainer
 from ._misc import AudioFileError, translate_errors
@@ -468,6 +469,10 @@ class AudioFile(dict, ImageContainer):
                 from quodlibet.util.collection import Playlist
                 playlists = Playlist.playlists_featuring(self)
                 return "\n".join([s.name for s in playlists]) or default
+            elif key == "played":
+                if self.get("~#lastplayed", 0) > get_init_time():
+                    return u"✔"
+                return u""
             elif key.startswith("#replaygain_"):
                 try:
                     val = self.get(key[1:], default)

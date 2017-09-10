@@ -9,6 +9,7 @@ import os
 import sys
 import warnings
 import logging
+import time
 
 from senf import environ, argv, fsn2text
 
@@ -24,6 +25,7 @@ from ._main import get_base_dir, is_release, get_image_dir
 
 _cli_initialized = False
 _initialized = False
+_init_time = None
 
 
 def _init_gtk_debug(no_excepthook):
@@ -40,6 +42,11 @@ def is_init():
     return _initialized
 
 
+def get_init_time():
+    global _init_time
+    return _init_time
+
+
 def init(no_translations=False, no_excepthook=False, config_file=None):
     """This needs to be called before any API can be used.
     Might raise in case of an error.
@@ -48,6 +55,7 @@ def init(no_translations=False, no_excepthook=False, config_file=None):
     """
 
     global _initialized
+    global _init_time
 
     if _initialized:
         return
@@ -58,6 +66,7 @@ def init(no_translations=False, no_excepthook=False, config_file=None):
     _init_gst()
     _init_dbus()
 
+    _init_time = time.time()
     _initialized = True
 
 
