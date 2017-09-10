@@ -237,7 +237,7 @@ class QueueExpander(Gtk.Expander):
         if len(model) == 0:
             text = ""
         else:
-            time = sum([row[0].get("~#length", 0) for row in model])
+            time = sum([row[0]("~#length:real", 0) for row in model])
             text = ngettext("%(count)d song (%(time)s)",
                             "%(count)d songs (%(time)s)",
                             len(model)) % {

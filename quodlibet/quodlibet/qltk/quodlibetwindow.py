@@ -1585,7 +1585,7 @@ class QuodLibetWindow(Window, PersistentWindowMixin, AppWindow):
             self.browser.activate()
 
     def __set_totals(self, info, songs):
-        length = sum(song.get("~#length", 0) for song in songs)
+        length = sum(song("~#length:real", 0) for song in songs)
         t = self.browser.status_text(count=len(songs),
                                      time=util.format_time_preferred(length))
         self.statusbar.set_default_text(t)

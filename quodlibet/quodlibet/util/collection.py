@@ -52,6 +52,7 @@ def bayesian_average(nums, c=None, m=None):
 
 NUM_DEFAULT_FUNCS = {
     "length": "sum",
+    "length:real": "sum",
     "playcount": "sum",
     "added": "max",
     "lastplayed": "max",

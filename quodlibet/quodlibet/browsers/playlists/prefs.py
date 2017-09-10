@@ -15,7 +15,7 @@ from quodlibet.browsers._base import EditDisplayPatternMixin, FakeDisplayItem
 from quodlibet.qltk import Button, Icons
 from quodlibet.util.i18n import numeric_phrase
 
-_FOOTER = "<~tracks> (<~filesize> / <~length>)"
+_FOOTER = "<~tracks> (<~filesize> / <~length:real>)"
 DEFAULT_PATTERN_TEXT = ("[b]<~name>[/b]\n"
                         "[small]<~tracks|%s|[i](%s)[/i]>[/small]"
                         % (_FOOTER, (_("empty"))))

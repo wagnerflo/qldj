@@ -349,6 +349,8 @@ class AudioFile(dict, ImageContainer):
             elif key == "#cue_out":
                 return float(self.get(
                     "qldj_" + key[1:], self("~#length", 1) * 1000.0))
+            elif key == "#length:real":
+                return (self("~#cue_out") - self("~#cue_in")) / 1000.0
             elif key == "#rating":
                 return dict.get(self, "~" + key, config.RATINGS.default)
             elif key == "rating":

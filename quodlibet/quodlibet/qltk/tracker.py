@@ -149,7 +149,7 @@ class SongTracker(object):
             else:
                 config.set("memory", "seek", 0)
 
-            if self.elapsed > 0.5 * song.get("~#length", 1):
+            if self.elapsed > 0.5 * song("~#length:real"):
                 song["~#lastplayed"] = int(time.time())
                 song["~#playcount"] = song.get("~#playcount", 0) + 1
                 self.__changed(librarian, song)
