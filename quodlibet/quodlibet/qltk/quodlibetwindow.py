@@ -968,6 +968,10 @@ class QuodLibetWindow(Window, PersistentWindowMixin, AppWindow):
             from quodlibet import app
             app.preview.jump(sec)
 
+        def preview_volume(delta):
+            from quodlibet import app
+            app.preview.volume = app.preview.volume + delta
+
         # qldi special shortcuts
         if event.state & Gdk.ModifierType.MOD5_MASK == Gdk.ModifierType.MOD5_MASK:
             if player is None:
@@ -984,6 +988,14 @@ class QuodLibetWindow(Window, PersistentWindowMixin, AppWindow):
             # Preview seek forwards: AltGr+Ö (german layout)
             elif event.keyval == 445:
                 preview_jump(+15)
+                return True
+            # Preview volume up: AltGr+Ü (german layout)
+            elif event.keyval == 168:
+                preview_volume(+0.1)
+                return True
+            # Preview volume down: AltGr+Ä (german layout)
+            elif event.keyval == 94:
+                preview_volume(-0.1)
                 return True
 
             if not player.song:
